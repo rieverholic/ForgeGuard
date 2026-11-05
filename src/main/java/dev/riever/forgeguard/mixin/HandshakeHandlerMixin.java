@@ -1,8 +1,9 @@
 package dev.riever.forgeguard.mixin;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
@@ -23,6 +24,7 @@ import com.mojang.authlib.properties.Property;
 import dev.riever.forgeguard.Config;
 import dev.riever.forgeguard.ForgeGuardHandshakePacket;
 import dev.riever.forgeguard.ForgeGuardNetworkManager;
+import dev.riever.forgeguard.ForwardedData;
 import dev.riever.forgeguard.ForwardedProfile;
 
 @Mixin(net.minecraft.server.network.NetHandlerHandshakeTCP.class)
@@ -38,6 +40,7 @@ public class HandshakeHandlerMixin {
     @Unique
     private void forgeguard$abort(String reason) {
         ChatComponentText chatcomponenttext = new ChatComponentText(reason);
+        field_147386_b.setConnectionState(EnumConnectionState.LOGIN);
         field_147386_b.scheduleOutboundPacket(new S00PacketDisconnect(chatcomponenttext));
         field_147386_b.closeChannel(chatcomponenttext);
     }
@@ -49,14 +52,12 @@ public class HandshakeHandlerMixin {
     public void onProcessHandshake(C00Handshake packetIn, CallbackInfo ci) {
         ForgeGuardNetworkManager networkManager = (ForgeGuardNetworkManager) field_147386_b;
         ForgeGuardHandshakePacket handshakePacket = (ForgeGuardHandshakePacket) packetIn;
-        String address = handshakePacket.forgeguard$getAddress();
-        UUID id = handshakePacket.forgeguard$getId();
-        Property[] rawProperties = handshakePacket.forgeguard$getProperties();
+        ForwardedData data = handshakePacket.forgeguard$getForwardedData();
         List<Property> properties = new ArrayList<>();
         // If bungeeguard is active
         String bungeeguardToken = null;
-        if (rawProperties != null) {
-            for (Property property : rawProperties) {
+        if (data != null) {
+            for (Property property : data.properties()) {
                 if (property.getName()
                     .equals(BUNGEEGUARD_TOKEN_NAME)) {
                     bungeeguardToken = property.getValue();
@@ -66,17 +67,21 @@ public class HandshakeHandlerMixin {
             }
         }
         if (packetIn.func_149594_c() == EnumConnectionState.LOGIN && Config.bungeeguardEnabled) {
-            if (bungeeguardToken == null) {
+            if (bungeeguardToken == null || bungeeguardToken.isEmpty()) {
                 forgeguard$abort("BungeeGuard token is missing");
                 ci.cancel();
                 return;
             }
-            if (!bungeeguardToken.equals(Config.bungeeguardToken)) {
+            byte[] tokenBytes = bungeeguardToken.getBytes(StandardCharsets.UTF_8);
+            byte[] actualTokenBytes = Config.bungeeguardToken.getBytes(StandardCharsets.UTF_8);
+            if (!MessageDigest.isEqual(tokenBytes, actualTokenBytes)) {
                 forgeguard$abort("BungeeGuard token is invalid");
                 ci.cancel();
                 return;
             }
         }
-        networkManager.forgeguard$setForwardedProfile(new ForwardedProfile(address, id, properties));
+        if (data != null) {
+            networkManager.forgeguard$setForwardedProfile(new ForwardedProfile(data.address(), data.id(), properties));
+        }
     }
 }
