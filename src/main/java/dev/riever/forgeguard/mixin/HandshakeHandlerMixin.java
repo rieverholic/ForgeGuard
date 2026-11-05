@@ -1,9 +1,14 @@
 package dev.riever.forgeguard.mixin;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import dev.riever.forgeguard.*;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.handshake.client.C00Handshake;
@@ -19,11 +24,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.authlib.properties.Property;
-
-import dev.riever.forgeguard.Config;
-import dev.riever.forgeguard.ForgeGuardHandshakePacket;
-import dev.riever.forgeguard.ForgeGuardNetworkManager;
-import dev.riever.forgeguard.ForwardedProfile;
 
 @Mixin(net.minecraft.server.network.NetHandlerHandshakeTCP.class)
 public class HandshakeHandlerMixin {
@@ -49,9 +49,10 @@ public class HandshakeHandlerMixin {
     public void onProcessHandshake(C00Handshake packetIn, CallbackInfo ci) {
         ForgeGuardNetworkManager networkManager = (ForgeGuardNetworkManager) field_147386_b;
         ForgeGuardHandshakePacket handshakePacket = (ForgeGuardHandshakePacket) packetIn;
-        String address = handshakePacket.forgeguard$getAddress();
-        UUID id = handshakePacket.forgeguard$getId();
-        Property[] rawProperties = handshakePacket.forgeguard$getProperties();
+        ForwardedData data = handshakePacket.forgeguard$getForwardedData();
+        InetAddress address = data.address();
+        UUID id = data.id();
+        List<Property> rawProperties = data.properties();
         List<Property> properties = new ArrayList<>();
         // If bungeeguard is active
         String bungeeguardToken = null;
@@ -66,12 +67,14 @@ public class HandshakeHandlerMixin {
             }
         }
         if (packetIn.func_149594_c() == EnumConnectionState.LOGIN && Config.bungeeguardEnabled) {
-            if (bungeeguardToken == null) {
+            if (bungeeguardToken == null || bungeeguardToken.isEmpty()) {
                 forgeguard$abort("BungeeGuard token is missing");
                 ci.cancel();
                 return;
             }
-            if (!bungeeguardToken.equals(Config.bungeeguardToken)) {
+            byte[] tokenBytes = bungeeguardToken.getBytes(StandardCharsets.UTF_8);
+            byte[] actualTokenBytes = Config.bungeeguardToken.getBytes(StandardCharsets.UTF_8);
+            if (!MessageDigest.isEqual(tokenBytes, actualTokenBytes)) {
                 forgeguard$abort("BungeeGuard token is invalid");
                 ci.cancel();
                 return;

@@ -35,9 +35,9 @@ public class NetworkManagerMixin implements ForgeGuardNetworkManager {
 
     @Inject(method = "getSocketAddress", at = @At("HEAD"), cancellable = true)
     public void forgeguard$onGetSocketAddress(CallbackInfoReturnable<SocketAddress> cir) {
-        String address = forgeguard$forwardedProfile != null ? forgeguard$forwardedProfile.address() : null;
+        InetSocketAddress address = forgeguard$forwardedProfile != null ? forgeguard$forwardedProfile.address() : null;
         if (address != null) {
-            cir.setReturnValue(new InetSocketAddress(address, 0));
+            cir.setReturnValue(address);
         }
     }
 }
