@@ -1,19 +1,16 @@
 package dev.riever.forgeguard.mixin;
 
-import java.util.regex.Pattern;
-
-import com.mojang.authlib.properties.Property;
 import net.minecraft.network.login.INetHandlerLoginServer;
 import net.minecraft.server.network.NetHandlerLoginServer;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 
 import dev.riever.forgeguard.ForgeGuardNetworkManager;
