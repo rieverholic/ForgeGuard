@@ -2,7 +2,6 @@ package dev.riever.forgeguard.mixin;
 
 import java.io.IOException;
 
-import dev.riever.forgeguard.ForwardedData;
 import net.minecraft.network.PacketBuffer;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import dev.riever.forgeguard.ForgeGuardHandshakePacket;
+import dev.riever.forgeguard.ForwardedData;
 
 @Mixin(net.minecraft.network.handshake.client.C00Handshake.class)
 public class HandshakePacketMixin implements ForgeGuardHandshakePacket {

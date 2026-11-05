@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.mojang.authlib.properties.Property;
 import com.mojang.util.UUIDTypeAdapter;
+
 import io.netty.util.NetUtil;
 
 @Desugar
