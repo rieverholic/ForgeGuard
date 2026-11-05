@@ -27,7 +27,11 @@ public class HandshakePacketMixin implements ForgeGuardHandshakePacket {
         String data = buf.readStringFromBuffer(Short.MAX_VALUE);
         forgeguard$forwardedData = ForwardedData.parse(data);
         if (forgeguard$forwardedData != null) {
-            return forgeguard$forwardedData.host();
+            String host = forgeguard$forwardedData.host();
+            if (host.length() > maxLength) {
+                throw new IOException("Host too long (" + host.length() + " > " + maxLength + ")");
+            }
+            return host;
         }
         if (data.length() > maxLength) {
             throw new IOException("Packet data too long (" + data.length() + " > " + maxLength + ")");
