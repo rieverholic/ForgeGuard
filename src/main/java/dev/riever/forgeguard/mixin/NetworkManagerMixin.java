@@ -25,7 +25,7 @@ public class NetworkManagerMixin implements ForgeGuardNetworkManager {
 
     @Override
     public boolean forgeguard$hasForwardedProfile() {
-        return forgeguard$forwardedProfile != null && forgeguard$forwardedProfile.isComplete();
+        return forgeguard$forwardedProfile != null;
     }
 
     @Override

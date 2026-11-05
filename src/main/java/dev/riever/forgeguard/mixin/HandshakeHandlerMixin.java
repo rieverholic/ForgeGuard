@@ -40,6 +40,7 @@ public class HandshakeHandlerMixin {
     @Unique
     private void forgeguard$abort(String reason) {
         ChatComponentText chatcomponenttext = new ChatComponentText(reason);
+        field_147386_b.setConnectionState(EnumConnectionState.LOGIN);
         field_147386_b.scheduleOutboundPacket(new S00PacketDisconnect(chatcomponenttext));
         field_147386_b.closeChannel(chatcomponenttext);
     }

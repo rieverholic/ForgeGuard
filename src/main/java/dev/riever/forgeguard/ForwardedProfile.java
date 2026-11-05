@@ -14,8 +14,4 @@ public record ForwardedProfile(InetSocketAddress address, UUID id, List<Property
     public ForwardedProfile(InetAddress address, UUID id, List<Property> properties) {
         this(new InetSocketAddress(address, 0), id, properties);
     }
-
-    public boolean isComplete() {
-        return address != null && id != null && properties != null;
-    }
 }
