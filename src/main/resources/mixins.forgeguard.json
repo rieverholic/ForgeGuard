@@ -2,7 +2,7 @@
   "required": true,
   "package": "dev.riever.forgeguard.mixin",
   "refmap": "mixins.forgeguard.refmap.json",
-  "mixins": [
+  "server": [
     "HandshakeHandlerMixin",
     "HandshakePacketMixin",
     "LoginStartPacketMixin",
